@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Canal de Denúncia - AgroAppEC</title>
+<link rel="icon" type="image/x-icon" href="image/favicon.png">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  :root{
+    --bg: #0a5c36;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --accent: #0a5c36;
+    --accent-2: #0c7a46;
+    --accent-light: #f0f9f4;
+    --text-primary: #1e293b;
+    --text-secondary: #374151;
+    --dark-blue: #1e3a5f;
+    --blue-accent: #2563eb;
+  }
+
+  /* Reset */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family: 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: 
+      radial-gradient(circle at 10% 20%, rgba(10, 92, 54, 0.9) 0%, rgba(10, 92, 54, 1) 100%),
+      linear-gradient(135deg, #0a5c36 0%, #0c7a46 100%);
+    color: white;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow:hidden;
+    position: relative;
+  }
+
+  /* Background pattern */
+  body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(255,255,255,0.05) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    z-index: -1;
+  }
+
+  /* Fullscreen centered stage */
+  .stage {
+    height: 100vh;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 440px 1fr;
+    gap: 20px;
+    align-items: center;
+    justify-items: center;
+    padding: 20px;
+    transition: transform .2s ease;
+  }
+
+  /* Card shared style */
+  .card {
+    width: 100%;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: fit-content;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+
+  .card::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .card::-webkit-scrollbar-track {
+    background: var(--accent-light);
+    border-radius: 10px;
+  }
+  
+  .card::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Left column */
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .brand h1{
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    color: var(--dark-blue);
+    font-weight: 700;
+    margin: 0;
+  }
+  
+  .brand p { 
+    font-size: 0.9rem; 
+    color: var(--muted); 
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .headline {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--dark-blue);
+    line-height: 1.3;
+  }
+
+  .desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .features {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .pill {
+    background: var(--accent-light);
+    color: var(--dark-blue);
+    padding: 8px 12px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid rgba(10, 92, 54, 0.1);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  
+  .pill i{ 
+    color: var(--accent); 
+    font-size: 0.85rem;
+  }
+
+  .pill:hover{ 
+    transform: translateY(-3px);
+  }
+
+  /* Center column: QR card */
+  .qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    height: fit-content;
+  }
+  
+  .qr-wrap {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+  }
+
+  .central-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  
+  .central-logo .logo {
+    width: 300px;
+    height: 100px;
+    border-radius: 20px;
+    object-fit: contain;
+    padding: 12px;
+    box-shadow: 
+      0 8px 25px rgba(10, 92, 54, 0.3),
+      0 0 0 4px rgba(255, 255, 255, 0.8),
+      0 0 0 6px rgba(10, 92, 54, 0.2);
+    background: white;
+    border: 2px solid rgba(10, 92, 54, 0.1);
+    position: relative;
+    z-index: 2;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: logoEntrance 1s ease-out forwards, logoFloat 3s ease-in-out infinite 1s;
+  }
+
+  @keyframes logoEntrance {
+    0% {
+      transform: scale(0.8) translateY(20px);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.05) translateY(-5px);
+    }
+    100% {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes logoFloat {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-8px) rotate(1deg);
+    }
+  }
+
+  .central-logo .logo:hover {
+    transform: translateY(-5px) scale(1.05) rotate(2deg);
+    box-shadow: 
+      0 15px 35px rgba(10, 92, 54, 0.4),
+      0 0 0 4px rgba(255, 255, 255, 0.9),
+      0 0 0 8px rgba(10, 92, 54, 0.15);
+  }
+
+  .logo-glow {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 25px;
+    background: radial-gradient(circle, rgba(10, 92, 54, 0.3) 0%, transparent 70%);
+    filter: blur(15px);
+    z-index: 1;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.1);
+    }
+  }
+
+  .qr-image {
+    width: 220px;
+    height: 220px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    margin: 10px 0;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  /* pulse behind QR */
+  .qr-pulse {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    filter: blur(18px);
+    background: radial-gradient(circle at 30% 30%, rgba(10, 92, 54, 0.2), rgba(10, 92, 54, 0.1) 30%, transparent 60%);
+    z-index: 0;
+    animation: pulse 1800ms infinite ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(.95); opacity:.8 }
+    50%{ transform: scale(1.06); opacity:.45 }
+    100%{ transform: scale(.95); opacity:.8 }
+  }
+
+  .qr-image img{ 
+    width: 80%; 
+    height: 80%; 
+    object-fit: contain; 
+    z-index: 2; 
+    background: white; 
+    padding: 6px; 
+    border-radius: 6px; 
+  }
+
+  .qr-caption { 
+    color: var(--muted); 
+    font-size: 0.85rem; 
+    margin-top: 8px; 
+    text-align: center; 
+    max-width: 280px;
+    line-height: 1.4;
+  }
+
+  .qr-actions { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 16px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform .2s ease, box-shadow .2s ease;
+    box-shadow: 0 6px 15px rgba(10, 92, 54, 0.3);
+    font-size: 0.9rem;
+  }
+  
+  .btn:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(10, 92, 54, 0.4);
+  }
+  
+  .btn:active{ 
+    transform: translateY(1px); 
+  }
+  
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    box-shadow: none;
+  }
+  
+  .btn.ghost:hover {
+    background: var(--accent-light);
+    transform: translateY(-2px);
+  }
+
+  /* Right column: guarantees */
+  .right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .guarantees {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .g-item{
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.8));
+    color: var(--text-primary);
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    border-left: 4px solid var(--accent);
+    transition: transform 0.3s ease;
+  }
+  
+  .g-item:hover {
+    transform: translateY(-3px);
+  }
+  
+  .g-item i{
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(10, 92, 54, 0.12), rgba(10, 92, 54, 0.08));
+    color: var(--accent);
+    box-shadow: 0 4px 8px rgba(10, 92, 54, 0.1);
+    transform: translateY(0);
+    animation: float 4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes float {
+    0%{ transform: translateY(0) }
+    50%{ transform: translateY(-4px) }
+    100%{ transform: translateY(0) }
+  }
+
+  .g-body { 
+    font-size: 0.85rem; 
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  
+  .g-body strong {
+    color: var(--dark-blue);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+  }
+
+  /* info section */
+  .info-section {
+    padding: 16px;
+    background: var(--accent-light);
+    border-radius: 12px;
+    border-left: 4px solid var(--accent);
+  }
+  
+  .info-section h3 {
+    color: var(--dark-blue);
+    margin-bottom: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  
+  .info-section ul {
+    padding-left: 16px;
+    color: var(--text-secondary);
+  }
+  
+  .info-section li {
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  /* small footer inside screen */
+  .mini-cta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 12px;
+    background: var(--accent-light);
+    border-radius: 10px;
+    border: 1px solid rgba(10, 92, 54, 0.1);
+    margin-top: 10px;
+  }
+
+  .link-like { 
+    color: var(--accent-2); 
+    text-decoration: underline; 
+    cursor: pointer; 
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+  
+  .link-like:hover {
+    color: var(--accent);
+  }
+
+  /* Security badge */
+  .security-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  /* tiny helper for copy toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    background: rgba(30, 58, 95, 0.9);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    z-index: 1000;
+  }
+  
+  .toast.show{ 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(-8px); 
+  }
+
+  /* subtle corner decorations */
+  .corner-deco {
+    position: absolute; 
+    width: 160px; 
+    height: 160px; 
+    opacity: 0.08; 
+    z-index: 0; 
+    filter: blur(25px);
+    border-radius: 50%;
+  }
+  
+  .deco-left { 
+    left: -40px; 
+    top: 10%; 
+    background: linear-gradient(135deg, #0a5c36, #0c7a46); 
+  }
+  
+  .deco-right { 
+    right: -40px; 
+    bottom: 10%; 
+    background: linear-gradient(135deg, #0c7a46, #0a5c36); 
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .stage { 
+      grid-template-columns: 1fr 380px 1fr; 
+      gap: 16px; 
+      padding: 16px; 
+    }
+    
+    .card { 
+      padding: 20px; 
+    }
+    
+    .qr-image {
+      width: 200px;
+      height: 200px;
+    }
+    
+    .central-logo .logo {
+      width: 90px;
+      height: 90px;
+    }
+    
+    .logo-glow {
+      width: 110px;
+      height: 110px;
+    }
+  }
+
+  @media (max-width: 980px) {
+    .stage { 
+      grid-template-columns: 1fr 340px 1fr; 
+      gap: 12px; 
+      padding: 12px; 
+    }
+    
+    .central-logo .logo {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .logo-glow {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .qr-image {
+      width: 180px;
+      height: 180px;
+    }
+    
+    .guarantees {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .stage { 
+      grid-template-columns: 1fr; 
+      grid-template-rows: auto auto auto;
+      gap: 12px; 
+      padding: 12px;
+      overflow-y: auto;
+    }
+    
+    .card {
+      max-height: none;
+    }
+    
+    body {
+      overflow: auto;
+    }
+    
+    .left, .right {
+      max-width: 600px;
+      width: 100%;
+    }
+    
+    .qr-card {
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .central-logo .logo {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .logo-glow {
+      width: 120px;
+      height: 120px;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- decoration -->
+<div class="corner-deco deco-left"></div>
+<div class="corner-deco deco-right"></div>
+
+<!-- stage -->
+<div class="stage">
+
+  <!-- LEFT -->
+  <div class="card left">
+    <div class="brand">
+      <h1>Canal de Denúncia — AgroAppEC</h1>
+      <p>Ambiente de trabalho seguro, ético e confidencial</p>
+    </div>
+
+    <div class="headline">Relate com Confiança — Sua Voz Faz a Diferença</div>
+
+    <div class="desc">
+      Utilize este canal seguro para reportar qualquer conduta inadequada no ambiente de trabalho, incluindo assédio moral ou sexual, discriminação, abuso de poder, fraudes ou qualquer violação ética. Sua denúncia será tratada com absoluto sigilo e investigada com imparcialidade.
+    </div>
+    
+    <div class="info-section">
+      <h3>Condutas que podem ser denunciadas:</h3>
+      <ul>
+        <li>Assédio moral, sexual ou discriminação de qualquer natureza</li>
+        <li>Abuso de poder, autoridade ou assédio hierárquico</li>
+        <li>Conflitos de interesse não declarados</li>
+        <li>Fraudes, irregularidades financeiras ou desvios</li>
+        <li>Violência, ameaças ou coerção no ambiente de trabalho</li>
+        <li>Condutas antiéticas ou que violem políticas internas</li>
+      </ul>
+    </div>
+
+    <div class="features">
+      <div class="pill"><i class="fas fa-user-secret"></i>Anonimato Opcional</div>
+      <div class="pill"><i class="fas fa-lock"></i>Confidencialidade Total</div>
+      <div class="pill"><i class="fas fa-balance-scale"></i>Investigação Justa</div>
+      <div class="pill"><i class="fas fa-shield-alt"></i>Proteção Contra Retaliação</div>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center; margin-top: 12px;">
+      <i class="fas fa-info-circle" style="color:var(--accent);"></i>
+      <div style="color:var(--muted); font-size:0.85rem;">
+        Escaneie o QR Code ao lado ou utilize os botões para acessar o formulário seguro de denúncias.
+      </div>
+    </div>
+
+    <div style="color:var(--muted); font-size:0.8rem; padding:10px; background:var(--accent-light); border-radius:8px; margin-top: 10px;">
+      <strong>Importante:</strong> Documente evidências apenas se for seguro fazê-lo. Todos os arquivos anexados são protegidos por criptografia e sigilo absoluto.
+    </div>
+
+  </div>
+
+  <!-- CENTER (QR) -->
+  <div class="card qr-card">
+    <div class="central-logo">
+      <div class="logo-glow"></div>
+      <img src="image/logo.png" alt="AgroAppEC" class="logo" />
+    </div>
+    
+    <div class="qr-wrap">
+      <div style="font-size:1rem; font-weight:700; color:var(--dark-blue); margin-bottom:8px; text-align:center">
+        Formulário Seguro de Denúncia
+      </div>
+
+      <div class="qr-image" id="qrBox">
+        <div class="qr-pulse"></div>
+        <!-- QR img will be inserted here by JS -->
+        <img id="qrImg" src="" alt="QR Code - acessar formulário de denúncia" />
+      </div>
+
+      <div class="qr-caption">
+        Aponte a câmera do seu celular para o QR Code acima para acessar diretamente o formulário seguro de denúncias.
+      </div>
+
+      <div class="qr-actions">
+        <button class="btn" id="openBtn" title="Abrir formulário em nova aba">
+          <i class="fas fa-arrow-up-right-from-square"></i> Abrir Formulário
+        </button>
+        <button class="btn ghost" id="copyBtn" title="Copiar link do formulário">
+          <i class="fas fa-link"></i> Copiar Link
+        </button>
+      </div>
+
+      <div class="security-badge">
+        <i class="fas fa-lock"></i> 
+        <span>Conexão Segura • Dados Sigilosos</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="card right">
+    <div style="font-size:1.1rem; font-weight:700; color:var(--dark-blue); margin-bottom:12px; text-align:center">Nossas Garantias</div>
+
+    <div class="guarantees">
+      <div class="g-item">
+        <i class="fas fa-user-shield"></i>
+        <div class="g-body"><strong>Confidencialidade Absoluta</strong>Somente a equipe autorizada tem acesso às denúncias. Seus dados são protegidos com criptografia de ponta a ponta.</div>
+      </div>
+
+      <div class="g-item">
+        <i class="fas fa-mask"></i>
+        <div class="g-body"><strong>Anonimato Preservado</strong>Opte por não se identificar — todas as denúncias são investigadas com o mesmo rigor, independentemente da identificação.</div>
+      </div>
+
+      <div class="g-item">
+        <i class="fas fa-ban"></i>
+        <div class="g-body"><strong>Proteção Contra Retaliação</strong>Garantimos proteção integral para denunciantes de boa-fé, conforme previsto em nossa política de compliance.</div>
+      </div>
+
+      <div class="g-item">
+        <i class="fas fa-search"></i>
+        <div class="g-body"><strong>Investigação Imparcial</strong>Processo investigativo transparente e isento, com acompanhamento de comitê interno especializado.</div>
+      </div>
+      
+      <div class="g-item">
+        <i class="fas fa-clock"></i>
+        <div class="g-body"><strong>Prazo de Resposta</strong>Comprometemo-nos a dar retorno em até 15 dias úteis após o recebimento da denúncia.</div>
+      </div>
+      
+      <div class="g-item">
+        <i class="fas fa-file-contract"></i>
+        <div class="g-body"><strong>Conformidade Legal</strong>Todo o processo está alinhado com a legislação trabalhista vigente e normas de compliance corporativo.</div>
+      </div>
+      
+      <div class="g-item">
+        <i class="fas fa-headset"></i>
+        <div class="g-body"><strong>Suporte Integral</strong>Orientação e suporte durante todo o processo de denúncia, desde o envio até o acompanhamento.</div>
+      </div>
+      
+      <div class="g-item">
+        <i class="fas fa-chart-line"></i>
+        <div class="g-body"><strong>Monitoramento Contínuo</strong>Acompanhamento sistemático de todas as denúncias recebidas, com métricas de resolução e satisfação.</div>
+      </div>
+    </div>
+
+    <div class="mini-cta">
+      <div style="font-size:0.85rem; color:var(--muted)">Precisa de ajuda imediata?</div>
+      <div class="link-like" onclick="window.location.href='mailto:compliance@agroappec.com'">Contate o Compliance</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- toast -->
+<div class="toast" id="toast">Link copiado para a área de transferência</div>
+
+<script>
+  // === CONFIG: URL do formulário real ===
+  const formUrl = "https://forms.office.com/r/jn7ikLaTt4";
+
+  // Utility: build QR image URL (using qrserver API)
+  function qrFor(url, size=300){
+    return "https://api.qrserver.com/v1/create-qr-code/?size=" + size + "x" + size + "&data=" + encodeURIComponent(url);
+  }
+
+  // Insert QR image
+  const qrImg = document.getElementById('qrImg');
+  qrImg.src = qrFor(formUrl, 400);
+  qrImg.alt = "QR Code para acessar o formulário de denúncia";
+
+  // Buttons
+  const openBtn = document.getElementById('openBtn');
+  const copyBtn = document.getElementById('copyBtn');
+
+  openBtn.addEventListener('click', () => {
+    window.open(formUrl, "_blank", "noopener");
+    buttonClickFeedback(openBtn);
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(formUrl);
+      showToast("Link copiado para a área de transferência");
+      buttonClickFeedback(copyBtn);
+    } catch(e){
+      // fallback: select and prompt
+      const temp = document.createElement('textarea');
+      temp.value = formUrl;
+      document.body.appendChild(temp);
+      temp.select();
+      try { document.execCommand('copy'); showToast("Link copiado"); } catch(ex){ alert("Copiar manualmente: " + formUrl); }
+      temp.remove();
+    }
+  });
+
+  // small animation feedback
+  function buttonClickFeedback(btn){
+    btn.style.transform = "translateY(2px) scale(.995)";
+    setTimeout(()=> btn.style.transform = "", 160);
+  }
+
+  // toast
+  const toast = document.getElementById('toast');
+  let toastTimer = null;
+  function showToast(text){
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toast.classList.remove('show'), 2000);
+  }
+
+  // Accessibility: allow ENTER on focused buttons
+  document.querySelectorAll('.btn').forEach(b => {
+    b.addEventListener('keydown', (e)=> { if(e.key === 'Enter'){ e.preventDefault(); b.click(); }});
+  });
+
+  // Fit check: ensure no vertical scroll on desktop
+  function fitStage(){
+    const stage = document.querySelector('.stage');
+    const vh = window.innerHeight;
+    const required = stage.scrollHeight;
+    
+    if(window.innerWidth > 768 && required > vh){
+      const scale = Math.max(0.85, vh / required);
+      stage.style.transform = "scale(" + scale + ")";
+    } else {
+      stage.style.transform = "scale(1)";
+    }
+  }
+  
+  window.addEventListener('load', fitStage);
+  window.addEventListener('resize', fitStage);
+
+  // subtle entrance animations
+  document.addEventListener('DOMContentLoaded', ()=>{
+    document.querySelectorAll('.card').forEach((c,i)=>{
+      c.style.opacity = 0;
+      c.style.transform = 'translateY(15px)';
+      setTimeout(()=> {
+        c.style.transition = 'opacity .5s ease, transform .5s ease';
+        c.style.opacity = 1;
+        c.style.transform = 'translateY(0)';
+      }, 100 + i*80);
+    });
+  });
+
+</script>
+
+</body>
+</html>
